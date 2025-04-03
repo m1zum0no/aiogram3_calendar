@@ -26,6 +26,8 @@ class DialogCalAct(str, Enum):
     cancel = 'CANCEL'
     start = 'START'
     day = 'SET-DAY'
+    prev_m = 'PREV-MONTH'
+    next_m = 'NEXT-MONTH'
 
 
 class CalendarCallback(CallbackData, prefix="calendar"):
