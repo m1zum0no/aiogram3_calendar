@@ -95,7 +95,7 @@ class GenericCalendar:
         return True, date
 
 
-# To run est: make `from .schemas import CalendarLabels` use absolute path: `from schemas ...` 
+# To run test: make `from .schemas import CalendarLabels` use absolute path: `from schemas ...` 
 # class MockUser:
 #     def __init__(self, language_code):
 #         self.language_code = language_code
