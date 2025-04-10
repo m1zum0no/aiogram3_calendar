@@ -6,15 +6,9 @@ from datetime import datetime
 from .schemas import CalendarLabels
 
 
-async def get_user_locale(from_user: User) -> str:
-    """Returns user locale in format en_US, accepts User instance from Message, CallbackData etc"""
-    loc = from_user.language_code or "en"
-    try:
-        Locale.parse(loc)
-        return loc
-    except UnknownLocaleError:
-        # Fallback to a constructed locale or "en_US" for invalid codes
-        return f"{loc}_{loc.upper()}" if len(loc) == 2 else "en_US"
+async def get_user_locale(user: User) -> str:
+    """Get user locale or fallback to en_US"""
+    return user.language_code or "en_US"
 
 
 class GenericCalendar:

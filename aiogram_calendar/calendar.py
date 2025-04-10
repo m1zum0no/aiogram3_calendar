@@ -4,13 +4,13 @@ from datetime import datetime, timedelta
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.types import CallbackQuery
 
-from .schemas import DialogCalendarCallback, DialogCalAct, highlight, superscript
+from .schemas import CalendarCallback, CalendarActions, highlight
 from .common import GenericCalendar
 
 
-class DialogCalendar(GenericCalendar):
+class Calendar(GenericCalendar):
 
-    ignore_callback = DialogCalendarCallback(act=DialogCalAct.ignore).pack()  # placeholder for no answer buttons
+    ignore_callback = CalendarCallback(act=CalendarActions.ignore).pack()  # placeholder for no answer buttons
 
     async def _get_month_kb(self, year: int):
         """Creates an inline keyboard with months for specified year"""
@@ -25,20 +25,20 @@ class DialogCalendar(GenericCalendar):
         if year > min_year:
             nav_row.append(InlineKeyboardButton(
                 text="<<",
-                callback_data=DialogCalendarCallback(act=DialogCalAct.prev_y, year=year, month=-1, day=-1).pack()
+                callback_data=CalendarCallback(act=CalendarActions.prev_y, year=year, month=-1, day=-1).pack()
             ))
         else:
             nav_row.append(InlineKeyboardButton(text=" ", callback_data=self.ignore_callback))
         
         nav_row.append(InlineKeyboardButton(
             text=str(year) if year != now_year else highlight(year),
-            callback_data=DialogCalendarCallback(act=DialogCalAct.start, year=year, month=-1, day=-1).pack()
+            callback_data=CalendarCallback(act=CalendarActions.start, year=year, month=-1, day=-1).pack()
         ))
         
         if year < max_year:
             nav_row.append(InlineKeyboardButton(
                 text=">>",
-                callback_data=DialogCalendarCallback(act=DialogCalAct.next_y, year=year, month=-1, day=-1).pack()
+                callback_data=CalendarCallback(act=CalendarActions.next_y, year=year, month=-1, day=-1).pack()
             ))
         else:
             nav_row.append(InlineKeyboardButton(text=" ", callback_data=self.ignore_callback))
@@ -65,8 +65,8 @@ class DialogCalendar(GenericCalendar):
             else:
                 month6_row.append(InlineKeyboardButton(
                     text=highlight_month(month),
-                    callback_data=DialogCalendarCallback(
-                        act=DialogCalAct.set_m, year=year, month=month, day=-1
+                    callback_data=CalendarCallback(
+                        act=CalendarActions.set_m, year=year, month=month, day=-1
                     ).pack()
                 ))
         kb.append(month6_row)
@@ -81,8 +81,8 @@ class DialogCalendar(GenericCalendar):
             else:
                 month12_row.append(InlineKeyboardButton(
                     text=highlight_month(month),
-                    callback_data=DialogCalendarCallback(
-                        act=DialogCalAct.set_m, year=year, month=month, day=-1
+                    callback_data=CalendarCallback(
+                        act=CalendarActions.set_m, year=year, month=month, day=-1
                     ).pack()
                 ))
         kb.append(month12_row)
@@ -91,7 +91,7 @@ class DialogCalendar(GenericCalendar):
         cancel_row = [
             InlineKeyboardButton(
                 text=self._labels.cancel_caption,
-                callback_data=DialogCalendarCallback(act=DialogCalAct.cancel, year=year, month=1, day=1).pack()
+                callback_data=CalendarCallback(act=CalendarActions.cancel, year=year, month=1, day=1).pack()
             )
         ]
         kb.append(cancel_row)
@@ -120,10 +120,6 @@ class DialogCalendar(GenericCalendar):
 
         def format_day_string():
             date_to_check = datetime(year, month, day)
-            if self.min_date and date_to_check < self.min_date:
-                return superscript(str(day))
-            elif self.max_date and date_to_check > self.max_date:
-                return superscript(str(day))
             return str(day)
 
         def highlight_day():
@@ -141,20 +137,20 @@ class DialogCalendar(GenericCalendar):
         if year > min_year:
             year_row.append(InlineKeyboardButton(
                 text="<<",
-                callback_data=DialogCalendarCallback(act=DialogCalAct.prev_y, year=year, month=month, day=1).pack()
+                callback_data=CalendarCallback(act=CalendarActions.prev_y, year=year, month=month, day=1).pack()
             ))
         else:
             year_row.append(InlineKeyboardButton(text=" ", callback_data=self.ignore_callback))
         
         year_row.append(InlineKeyboardButton(
             text=str(year) if year != now_year else highlight(year),
-            callback_data=DialogCalendarCallback(act=DialogCalAct.start, year=year, month=-1, day=-1).pack()
+            callback_data=CalendarCallback(act=CalendarActions.start, year=year, month=-1, day=-1).pack()
         ))
         
         if year < max_year:
             year_row.append(InlineKeyboardButton(
                 text=">>",
-                callback_data=DialogCalendarCallback(act=DialogCalAct.next_y, year=year, month=month, day=1).pack()
+                callback_data=CalendarCallback(act=CalendarActions.next_y, year=year, month=month, day=1).pack()
             ))
         else:
             year_row.append(InlineKeyboardButton(text=" ", callback_data=self.ignore_callback))
@@ -167,21 +163,21 @@ class DialogCalendar(GenericCalendar):
         if not (year == min_year and month <= min_month):
             month_row.append(InlineKeyboardButton(
                 text="<",
-                callback_data=DialogCalendarCallback(act=DialogCalAct.prev_m, year=year, month=month, day=1).pack()
+                callback_data=CalendarCallback(act=CalendarActions.prev_m, year=year, month=month, day=1).pack()
             ))
         else:
             month_row.append(InlineKeyboardButton(text=" ", callback_data=self.ignore_callback))
         
         month_row.append(InlineKeyboardButton(
             text=highlight_month(),
-            callback_data=DialogCalendarCallback(act=DialogCalAct.set_y, year=year, month=-1, day=-1).pack()
+            callback_data=CalendarCallback(act=CalendarActions.set_y, year=year, month=-1, day=-1).pack()
         ))
         
         # Show ">" only if not at max boundary (max_month of max_year)
         if not (year == max_year and month >= max_month):
             month_row.append(InlineKeyboardButton(
                 text=">",
-                callback_data=DialogCalendarCallback(act=DialogCalAct.next_m, year=year, month=month, day=1).pack()
+                callback_data=CalendarCallback(act=CalendarActions.next_m, year=year, month=month, day=1).pack()
             ))
         else:
             month_row.append(InlineKeyboardButton(text=" ", callback_data=self.ignore_callback))
@@ -212,7 +208,7 @@ class DialogCalendar(GenericCalendar):
                 else:
                     days_row.append(InlineKeyboardButton(
                         text=highlight_day(),
-                        callback_data=DialogCalendarCallback(act=DialogCalAct.day, year=year, month=month, day=day).pack()
+                        callback_data=CalendarCallback(act=CalendarActions.day, year=year, month=month, day=day).pack()
                     ))
             kb.append(days_row)
 
@@ -220,7 +216,7 @@ class DialogCalendar(GenericCalendar):
         cancel_row = [
             InlineKeyboardButton(
                 text=self._labels.cancel_caption,
-                callback_data=DialogCalendarCallback(act=DialogCalAct.cancel, year=year, month=month, day=1).pack()
+                callback_data=CalendarCallback(act=CalendarActions.cancel, year=year, month=month, day=1).pack()
             )
         ]
         kb.append(cancel_row)
@@ -244,7 +240,7 @@ class DialogCalendar(GenericCalendar):
         for value in range(now_year, now_year + 2):  # Only current year and next year
             years_row.append(InlineKeyboardButton(
                 text=str(value) if value != now_year else highlight(value),
-                callback_data=DialogCalendarCallback(act=DialogCalAct.set_y, year=value, month=-1, day=-1).pack()
+                callback_data=CalendarCallback(act=CalendarActions.set_y, year=value, month=-1, day=-1).pack()
             ))
         kb.append(years_row)
 
@@ -252,32 +248,32 @@ class DialogCalendar(GenericCalendar):
         cancel_row = [
             InlineKeyboardButton(
                 text=self._labels.cancel_caption,
-                callback_data=DialogCalendarCallback(act=DialogCalAct.cancel, year=year, month=1, day=1).pack()
+                callback_data=CalendarCallback(act=CalendarActions.cancel, year=year, month=1, day=1).pack()
             )
         ]
         kb.append(cancel_row)
 
         return InlineKeyboardMarkup(row_width=2, inline_keyboard=kb)
 
-    async def process_selection(self, query: CallbackQuery, data: DialogCalendarCallback) -> tuple:
+    async def process_selection(self, query: CallbackQuery, data: CalendarCallback) -> tuple:
         return_data = (False, None)
         today = datetime.now()
         min_year, max_year = today.year, today.year + 1  # Restrict to current and next year
         min_month = today.month  # Minimum month in min_year is current month
 
-        if data.act == DialogCalAct.ignore:
+        if data.act == CalendarActions.ignore:
             await query.answer(cache_time=60)
-        elif data.act == DialogCalAct.set_y:
+        elif data.act == CalendarActions.set_y:
             await query.message.edit_reply_markup(reply_markup=await self._get_month_kb(int(data.year)))
-        elif data.act == DialogCalAct.start:
+        elif data.act == CalendarActions.start:
             await query.message.edit_reply_markup(reply_markup=await self.start_calendar(int(data.year)))
-        elif data.act == DialogCalAct.set_m:
+        elif data.act == CalendarActions.set_m:
             await query.message.edit_reply_markup(reply_markup=await self._get_days_kb(int(data.year), int(data.month)))
-        elif data.act == DialogCalAct.day:
+        elif data.act == CalendarActions.day:
             return await self.process_day_select(data, query)
-        elif data.act == DialogCalAct.cancel:
+        elif data.act == CalendarActions.cancel:
             await query.message.delete_reply_markup()
-        elif data.act == DialogCalAct.prev_y:
+        elif data.act == CalendarActions.prev_y:
             if data.month == -1:
                 # From month keyboard: change year and show months
                 new_year = max(int(data.year) - 1, min_year)
@@ -287,7 +283,7 @@ class DialogCalendar(GenericCalendar):
                 new_year = max(int(data.year) - 1, min_year)
                 new_month = min(data.month, 12) if new_year > min_year else max(data.month, min_month)
                 await query.message.edit_reply_markup(reply_markup=await self._get_days_kb(new_year, new_month))
-        elif data.act == DialogCalAct.next_y:
+        elif data.act == CalendarActions.next_y:
             if data.month == -1:
                 # From month keyboard: change year and show months
                 new_year = min(int(data.year) + 1, max_year)
@@ -297,7 +293,7 @@ class DialogCalendar(GenericCalendar):
                 new_year = min(int(data.year) + 1, max_year)
                 new_month = min(data.month, 12) if new_year > min_year else max(data.month, min_month)
                 await query.message.edit_reply_markup(reply_markup=await self._get_days_kb(new_year, new_month))
-        elif data.act == DialogCalAct.prev_m:
+        elif data.act == CalendarActions.prev_m:
             temp_date = datetime(int(data.year), int(data.month), 1) - timedelta(days=1)
             new_year = temp_date.year
             new_month = temp_date.month
@@ -305,7 +301,7 @@ class DialogCalendar(GenericCalendar):
                 new_year = min_year
                 new_month = min_month  # Stay at min_month of min_year
             await query.message.edit_reply_markup(reply_markup=await self._get_days_kb(new_year, new_month))
-        elif data.act == DialogCalAct.next_m:
+        elif data.act == CalendarActions.next_m:
             temp_date = datetime(int(data.year), int(data.month), 1) + timedelta(days=31)
             new_year = temp_date.year
             new_month = temp_date.month

@@ -3,7 +3,7 @@ import asyncio
 import sys
 from datetime import datetime
 
-from aiogram_calendar import DialogCalendar, DialogCalendarCallback, get_user_locale
+from aiogram_calendar import Calendar, CalendarCallback, get_user_locale
 from aiogram import Bot, Dispatcher, F
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
@@ -20,47 +20,27 @@ dp = Dispatcher()
 # Initialising keyboard
 kb = [
     [
-        KeyboardButton(text='Dialog Calendar'),
-        KeyboardButton(text='Dialog Calendar w year'),
-        KeyboardButton(text='Dialog Calendar w month'),
+        KeyboardButton(text='Open Calendar'),
     ],
 ]
 start_kb = ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True)
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
-    await message.reply(f"Hello, {hbold(message.from_user.full_name)}! Pick a calendar", reply_markup=start_kb)
+    await message.reply(f"Hello, {hbold(message.from_user.full_name)}! Select a date", reply_markup=start_kb)
 
-@dp.message(F.text.lower() == 'dialog calendar')
+@dp.message(F.text.lower() == 'open calendar')
 async def dialog_cal_handler(message: Message):
     await message.answer(
         "Please select a date: ",
-        reply_markup=await DialogCalendar(
+        reply_markup=await Calendar(
             locale=await get_user_locale(message.from_user)
         ).start_calendar()
     )
 
-@dp.message(F.text.lower() == 'dialog calendar w year')
-async def dialog_cal_handler_year(message: Message):
-    await message.answer(
-        "Calendar opened years selection around 1989. Please select a date: ",
-        reply_markup=await DialogCalendar(
-            locale=await get_user_locale(message.from_user)
-        ).start_calendar(1989)
-    )
-
-@dp.message(F.text.lower() == 'dialog calendar w month')
-async def dialog_cal_handler_month(message: Message):
-    await message.answer(
-        "Calendar opened on Sep 1989. Please select a date: ",
-        reply_markup=await DialogCalendar(
-            locale=await get_user_locale(message.from_user)
-        ).start_calendar(year=1989, month=9)
-    )
-
-@dp.callback_query(DialogCalendarCallback.filter())
+@dp.callback_query(CalendarCallback.filter())
 async def process_dialog_calendar(callback_query: CallbackQuery, callback_data: CallbackData):
-    selected, date = await DialogCalendar(
+    selected, date = await Calendar(
         locale=await get_user_locale(callback_query.from_user)
     ).process_selection(callback_query, callback_data)
     if selected:
