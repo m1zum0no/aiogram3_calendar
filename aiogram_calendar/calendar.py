@@ -14,7 +14,7 @@ class Calendar(GenericCalendar):
 
     async def _get_month_kb(self, year: int):
         """Creates an inline keyboard with months for specified year"""
-        today = datetime.now()
+        today = datetime(2025, 4, 7) # datetime.now()
         now_month, now_year = today.month, today.year
         min_year, max_year = now_year, now_year + 1  # Restrict to current and next year
         min_month = now_month if year == min_year else 1  # Minimum month is current month in min_year
@@ -51,7 +51,7 @@ class Calendar(GenericCalendar):
             month_str = self._labels.months[month - 1]
             # Strikethrough months before min_month in min_year
             if year == min_year and month < min_month:
-                return ''.join(c + '\u0335' for c in month_str)
+                return ''.join(c + '\u0336' for c in month_str)
             elif now_month == month and now_year == year:
                 return highlight(month_str)
             return month_str
@@ -100,7 +100,7 @@ class Calendar(GenericCalendar):
 
     async def _get_days_kb(self, year: int, month: int):
         """Creates an inline keyboard with calendar days of month for specified year and month"""
-        today = datetime.now()
+        today = datetime(2025, 4, 7)
         now_weekday = self._labels.days_of_week[today.weekday()]
         now_month, now_year, now_day = today.month, today.year, today.day
         min_year, max_year = now_year, now_year + 1  # Restrict to current and next year
@@ -119,8 +119,11 @@ class Calendar(GenericCalendar):
             return weekday
 
         def format_day_string():
-            date_to_check = datetime(year, month, day)
-            return str(day)
+            # For edge case (last week with empty Sunday), don't pad days in last row
+            if is_edge_case and week_idx == len(month_calendar) - 1:
+                print("EDGE CASE FROM DAY STRING")
+                return f"{day}"  # No padding in edge case row
+            return f" {day:2} "  # Normal padding for other row
 
         def highlight_day():
             day_string = format_day_string()
@@ -128,7 +131,7 @@ class Calendar(GenericCalendar):
             if year == now_year and month == now_month and day < now_day:
                 return ''.join(c + '\u0335' for c in day_string)  # Short stroke overlay
             elif now_month == month and now_year == year and now_day == day:
-                return highlight(day_string)
+                return highlight(day_string.strip() if len(day_string.strip()) == 2 else day_string)
             return day_string
 
         kb = []
@@ -193,23 +196,40 @@ class Calendar(GenericCalendar):
 
         # Calendar days
         month_calendar = calendar.monthcalendar(year, month)
-        for week in month_calendar:
+        for week_idx, week in enumerate(month_calendar):
             days_row = []
-            for day in week:
+            
+            # Check if this is the last week with only first cell empty (month ends on Sunday)
+            is_edge_case = (week_idx == len(month_calendar) - 1 and  # Last week
+                week[6] == 0 and  # Sunday is empty
+                all(d > 0 for d in week[:6]))  # Monday-Saturday are non-empty
+            if is_edge_case:
+                print(f"EDGE CASE DETECTED: {week}")  # Debugging
+            
+            for day_idx, day in enumerate(week):
                 if day == 0:
-                    days_row.append(InlineKeyboardButton(text=" ", callback_data=self.ignore_callback))
-                    continue
-                # Make days before today unclickable in current month and year
-                if year == now_year and month == now_month and day < now_day:
-                    days_row.append(InlineKeyboardButton(
-                        text=highlight_day(),
-                        callback_data=self.ignore_callback
-                    ))
+                    if is_edge_case and day_idx == 6:
+                        # Use a special invisible character that maintains width
+                        display_text = " ⠀ "  # U+202F (narrow no-break space)
+                    else:
+                        display_text = "    "  # Normal empty cell
+                    callback = self.ignore_callback
                 else:
-                    days_row.append(InlineKeyboardButton(
-                        text=highlight_day(),
-                        callback_data=CalendarCallback(act=CalendarActions.day, year=year, month=month, day=day).pack()
-                    ))
+                    display_text = highlight_day()
+                    if year == now_year and month == now_month and day < now_day:
+                        callback = self.ignore_callback
+                    else:
+                        callback = CalendarCallback(
+                            act=CalendarActions.day, 
+                            year=year, 
+                            month=month, 
+                            day=day
+                        ).pack()
+                
+                days_row.append(InlineKeyboardButton(
+                    text=display_text,
+                    callback_data=callback
+                ))
             kb.append(days_row)
 
         # Last row with cancel button only
@@ -221,14 +241,14 @@ class Calendar(GenericCalendar):
         ]
         kb.append(cancel_row)
 
-        return InlineKeyboardMarkup(row_width=7, inline_keyboard=kb)
+        return InlineKeyboardMarkup(row_width=7, inline_keyboard=kb, resize_keyboard=True)
 
     async def start_calendar(
         self,
-        year: int = datetime.now().year,
+        year: int = datetime(2025, 4, 7).year,
         month: int = None
     ) -> InlineKeyboardMarkup:
-        today = datetime.now()
+        today = datetime(2025, 4, 7)
         now_year = today.year
 
         if month:
@@ -257,7 +277,7 @@ class Calendar(GenericCalendar):
 
     async def process_selection(self, query: CallbackQuery, data: CalendarCallback) -> tuple:
         return_data = (False, None)
-        today = datetime.now()
+        today = datetime(2025, 4, 7)
         min_year, max_year = today.year, today.year + 1  # Restrict to current and next year
         min_month = today.month  # Minimum month in min_year is current month
 
