@@ -121,7 +121,6 @@ class Calendar(GenericCalendar):
         def format_day_string():
             # For edge case (last week with empty Sunday), don't pad days in last row
             if is_edge_case and week_idx == len(month_calendar) - 1:
-                print("EDGE CASE FROM DAY STRING")
                 return f"{day}"  # No padding in edge case row
             return f" {day:2} "  # Normal padding for other row
 
@@ -203,8 +202,6 @@ class Calendar(GenericCalendar):
             is_edge_case = (week_idx == len(month_calendar) - 1 and  # Last week
                 week[6] == 0 and  # Sunday is empty
                 all(d > 0 for d in week[:6]))  # Monday-Saturday are non-empty
-            if is_edge_case:
-                print(f"EDGE CASE DETECTED: {week}")  # Debugging
             
             for day_idx, day in enumerate(week):
                 if day == 0:
