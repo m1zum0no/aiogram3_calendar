@@ -14,7 +14,7 @@ class Calendar(GenericCalendar):
 
     async def _get_month_kb(self, year: int):
         """Creates an inline keyboard with months for specified year"""
-        today = datetime(2025, 4, 7) # datetime.now()
+        today = datetime.now()
         now_month, now_year = today.month, today.year
         min_year, max_year = now_year, now_year + 1  # Restrict to current and next year
         min_month = now_month if year == min_year else 1  # Minimum month is current month in min_year
@@ -100,7 +100,7 @@ class Calendar(GenericCalendar):
 
     async def _get_days_kb(self, year: int, month: int):
         """Creates an inline keyboard with calendar days of month for specified year and month"""
-        today = datetime(2025, 4, 7)
+        today = datetime.now()
         now_weekday = self._labels.days_of_week[today.weekday()]
         now_month, now_year, now_day = today.month, today.year, today.day
         min_year, max_year = now_year, now_year + 1  # Restrict to current and next year
@@ -245,10 +245,10 @@ class Calendar(GenericCalendar):
 
     async def start_calendar(
         self,
-        year: int = datetime(2025, 4, 7).year,
+        year: int = datetime.now().year,
         month: int = None
     ) -> InlineKeyboardMarkup:
-        today = datetime(2025, 4, 7)
+        today = datetime.now()
         now_year = today.year
 
         if month:
@@ -277,7 +277,7 @@ class Calendar(GenericCalendar):
 
     async def process_selection(self, query: CallbackQuery, data: CalendarCallback) -> tuple:
         return_data = (False, None)
-        today = datetime(2025, 4, 7)
+        today = datetime.now()
         min_year, max_year = today.year, today.year + 1  # Restrict to current and next year
         min_month = today.month  # Minimum month in min_year is current month
 
